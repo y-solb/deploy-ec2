@@ -1,7 +1,7 @@
 "use client";
 
 import { Photo } from "@/types/Photo";
-import styles from "./Postlist.module.css";
+import styles from "./PostList.module.css";
 import PostItem from "./PostItem";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getData } from "@/app/page";
