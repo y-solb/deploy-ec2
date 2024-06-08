@@ -8,6 +8,7 @@ export default async function Home() {
 
   return (
     <section className={styles.main}>
+      <h1>배포 비교</h1>
       <PostList initialPhotoList={data} />
     </section>
   );
