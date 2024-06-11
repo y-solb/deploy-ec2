@@ -9,15 +9,11 @@ import {
 
 export default async function Home() {
   const queryClient = new QueryClient();
-  // await queryClient.prefetchInfiniteQuery({
-  //   queryKey: ["list"],
-  //   queryFn: ({ pageParam }) => getData(pageParam as number),
-  //   initialPageParam: 1,
-  //   staleTime: 30 * 1000,
-  // });
-  await queryClient.prefetchQuery({
+  await queryClient.prefetchInfiniteQuery({
     queryKey: ["list"],
-    queryFn: () => getData(1),
+    queryFn: ({ pageParam }) => getData(pageParam as number),
+    initialPageParam: 1,
+    staleTime: 30 * 1000,
   });
 
   const dehydratedState = dehydrate(queryClient);
