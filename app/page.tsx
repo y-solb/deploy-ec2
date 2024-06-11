@@ -9,12 +9,17 @@ import {
 
 export default async function Home() {
   const queryClient = new QueryClient();
-  await queryClient.prefetchInfiniteQuery({
+  // await queryClient.prefetchInfiniteQuery({
+  //   queryKey: ["list"],
+  //   queryFn: ({ pageParam }) => getData(pageParam as number),
+  //   initialPageParam: 1,
+  //   staleTime: 30 * 1000,
+  // });
+  await queryClient.prefetchQuery({
     queryKey: ["list"],
-    queryFn: ({ pageParam }) => getData(pageParam as number),
-    initialPageParam: 1,
-    staleTime: 30 * 1000,
+    queryFn: () => getData(1),
   });
+
   const dehydratedState = dehydrate(queryClient);
   return (
     <section className={styles.main}>
