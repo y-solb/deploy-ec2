@@ -3,31 +3,37 @@
 import { Photo } from "@/types/Photo";
 import styles from "./PostList.module.css";
 import PostItem from "./PostItem";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { getData } from "@/api/photo";
+import { InfiniteData, useInfiniteQuery } from "@tanstack/react-query";
 
-type PostListProps = {
-  initialPhotoList: Photo[];
+const useInfinitePortfolioQuery = () => {
+  return useInfiniteQuery<Photo[], Error, InfiniteData<Photo[]>>({
+    queryKey: ["list"],
+    queryFn: ({ pageParam }) => getData(pageParam as number),
+    getNextPageParam: (_, allPages) => {
+      return allPages.length + 1;
+    },
+    initialPageParam: 1,
+    staleTime: 30 * 1000,
+  });
 };
 
-export default function PostList({ initialPhotoList }: PostListProps) {
+export default function PostList() {
   const targetRef = useRef(null);
-  const [page, setPage] = useState(2);
-  const [isLoading, setIsLoading] = useState(false);
-  const [posts, setPosts] = useState<Photo[]>(initialPhotoList);
+  const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
+    useInfinitePortfolioQuery();
 
   const handleIntersect = useCallback(
     async (entries: IntersectionObserverEntry[]) => {
       const target = entries[0];
-      if (target.isIntersecting && !isLoading) {
-        setIsLoading(true);
-        const response = await getData(page);
-        setPosts((prev) => [...prev, ...response]);
-        setPage((prev) => prev + 1);
-        setIsLoading(false);
+      if (target.isIntersecting) {
+        if (!isFetchingNextPage && hasNextPage) {
+          fetchNextPage();
+        }
       }
     },
-    [page, isLoading]
+    [fetchNextPage, hasNextPage, isFetchingNextPage]
   );
 
   useEffect(() => {
@@ -42,14 +48,23 @@ export default function PostList({ initialPhotoList }: PostListProps) {
     }
     return () => observer.disconnect();
   }, [handleIntersect]);
+
+  useEffect(() => {
+    console.log(data);
+  });
   return (
     <>
       <ul className={styles.posts}>
-        {posts.map((post) => (
-          <PostItem key={post.id} post={post} />
+        {data?.pages.map((page, index) => (
+          <Fragment key={index}>
+            {page.map((post) => (
+              <PostItem key={post.id} post={post} />
+            ))}
+          </Fragment>
         ))}
       </ul>
-      {isLoading && <p>로딩중!</p>}
+
+      {isFetchingNextPage && <p>로딩중!</p>}
       <div className={styles.target} ref={targetRef}></div>
     </>
   );
